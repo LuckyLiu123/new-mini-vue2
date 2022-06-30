@@ -1,14 +1,51 @@
+<style>
+    body{
+        margin: 0;
+    }
+    #app{
+        height: 100%;
+        background-color: #000;
+        padding-top: 200px;
+        box-sizing: border-box;
+    }
+    #app p{
+        color: #fff;
+        font-size: 120px;
+        text-align: center;
+        margin: 30px 0;
+    }
+</style>
 <div id="app">
-    <h1>初始化流程</h1>
-    <p>{{foo}}</p>
+    <p>{{date}}</p>
+    <p>{{week}}</p>
+    <p>{{time}}</p>
 </div>
 <script src="./src/index.js"></script>
 <script>
     const app = new KVue({
         el: '#app',
         data: {
-            foo: 'foo'
+            date: getDate(),
+            week: getWeek(),
+            time: new Date().toLocaleTimeString()
         }
     })
+
+    function getDate(){
+        const date = new Date();
+        return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+    }
+
+    function getWeek(){
+        const date = new Date();
+        const arr = ['一', '二', '三', '四', '五', '六', '天']
+        return '星期' + arr[date.getDay() - 1];
+    }
+
+    setInterval(() => {
+        app.date = getDate();
+        app.week = getWeek();
+        app.time = new Date().toLocaleTimeString()
+    }, 1000)
 
 </script>

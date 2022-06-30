@@ -73,6 +73,7 @@ KVue.prototype._update = function(vnode){
 
     }else{
         // 更新流程
+        this.__patch__(prevVnode, vnode);
     }
 
     this._vnode = vnode;
@@ -87,7 +88,54 @@ KVue.prototype.__patch__ = function(oldVnode, vnode){
         parent.insertBefore(el, refElm);
         parent.removeChild(oldVnode);
 
-        // this._vnode = vnode;
+        this._vnode = vnode;
+    }else{
+        // 获取要更新的元素
+        const el = vnode.el = oldVnode.el;
+
+        // 同层比较相同的节点
+        if(oldVnode.tag === vnode.tag){
+            // 获取双方的孩子节点
+            const newCh = vnode.children.length > 0 ? vnode.children : vnode.value;
+            const oldCh = oldVnode.children.length > 0 ? oldVnode.children : oldVnode.value;
+            if(typeof newCh === 'string'){
+                if(typeof oldCh === 'string'){
+                    // 文本更新
+                    if(newCh !== oldCh){
+                        el.textContent = newCh;
+                    }
+                }else{
+                    el.textContent = newCh;
+                }
+            }else{
+                if(typeof oldCh === 'string'){
+                    el.textContent = '';
+                    // 循环创建并追加
+
+                }else{
+                    this.updateChildren(el, oldCh, newCh);
+                }
+            }
+        }
+
+    }
+}
+
+KVue.prototype.updateChildren = function(parentElm, oldCh, newCh){
+    const len = Math.min(oldCh.length, newCh.length);
+    for(let i = 0; i < len; i++){
+        this.__patch__(oldCh[i], newCh[i]);
+    }
+
+    if(newCh.length > oldCh.length){
+        newCh.slice(len).forEach((child) => {
+            const _el = this.createElm(child);
+            parentElm.appendChild(_el);
+        })
+    }else if(oldCh.length > newCh.length){
+        oldCh.slice(len).forEach((child) => {
+            parentElm.removeChild(child.el);
+        })
     }
 }
 
@@ -115,6 +163,7 @@ function parseVNode(vnode){
             _node.appendChild(parseVNode(child));
         })
     }
+    vnode.el = _node;
     return _node;
 }
 
